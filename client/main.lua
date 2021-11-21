@@ -4,27 +4,32 @@ MenuData.RegisteredTypes = {}
 
 --==================================FUNCTIONS ==================================
 MenuData.RegisteredTypes['default'] = {
-    open  = function(namespace, name, data)
+    open  = function(namespace, name, data,setnui)
         SendNUIMessage({
             ak_menubase_action = 'openMenu',
             ak_menubase_namespace = namespace,
             ak_menubase_name = name,
             ak_menubase_data = data
-        })end,
-    close  = function(namespace, name)
+        }) 
+		if setnui then
+			SetNuiFocus(setnui,setnui)
+		end
+	end,
+    close  = function(namespace, name,setnui)
         SendNUIMessage({
             ak_menubase_action = 'closeMenu',
             ak_menubase_namespace = namespace,
             ak_menubase_name = name,
             ak_menubase_data = data
-        })
+        }) 
+		SetNuiFocus(false,false)
     end
 }
 
 
 
 
-function MenuData.Open(type, namespace, name, data, submit, cancel, change, close)
+function MenuData.Open(type, namespace, name, data, submit, cancel, change, close,setnui)
     local menu = {}
 
     menu.type      = type
@@ -34,9 +39,10 @@ function MenuData.Open(type, namespace, name, data, submit, cancel, change, clos
     menu.submit    = submit
     menu.cancel    = cancel
     menu.change    = change
-
+    menu.setnui    = setnui or false
+	print(menu.setnui)
     menu.close = function()
-        MenuData.RegisteredTypes[type].close(namespace, name)
+        MenuData.RegisteredTypes[type].close(namespace, name,false)
 
         for i=1, #MenuData.Opened, 1 do
             if MenuData.Opened[i] then
@@ -72,8 +78,8 @@ function MenuData.Open(type, namespace, name, data, submit, cancel, change, clos
 
     end
 
-    menu.refresh = function()
-        MenuData.RegisteredTypes[type].open(namespace, name, menu.data)
+    menu.refresh = function() 
+        MenuData.RegisteredTypes[type].open(namespace, name, menu.data,menu.setnui)
     end
 
     menu.setElement = function(i, key, val)
@@ -102,7 +108,7 @@ function MenuData.Open(type, namespace, name, data, submit, cancel, change, clos
         end
     end
 	MenuData.Opened[#MenuData.Opened+1]= menu
-    MenuData.RegisteredTypes[type].open(namespace, name, data)
+    MenuData.RegisteredTypes[type].open(namespace, name, data,menu.setnui)
     PlaySoundFrontend("SELECT", "RDRO_Character_Creator_Sounds", true, 0)
     return menu
 end
@@ -157,28 +163,40 @@ end
 local Timer, MenuType = 0, 'default'
 
 
-RegisterNUICallback('menu_submit', function(data)
+RegisterNUICallback('menu_submit', function(data,cb)
     PlaySoundFrontend("SELECT", "RDRO_Character_Creator_Sounds", true, 0)
     local menu = MenuData.GetOpened(MenuType, data._namespace, data._name)
 
     if menu.submit ~= nil then
         menu.submit(data, menu)
     end
+	cb({})
 end)
 
-RegisterNUICallback('playsound', function()
+RegisterNUICallback('playsound', function(data,cb) 
+	if data.type == "text" then
+		--SetNuiFocus(1, 1)
+		--SetNuiFocusKeepInput(false)
+	else 
+		--SetNuiFocus(0, 0)
+		--SetNuiFocusKeepInput(true)	
+	end
     PlaySoundFrontend("NAV_LEFT", "PAUSE_MENU_SOUNDSET", true, 0)
+	cb({})
 end)
 
-RegisterNUICallback('menu_cancel', function(data)
+RegisterNUICallback('menu_cancel', function(data,cb)	
+	--SetNuiFocus(0, 0)
+	--SetNuiFocusKeepInput(true)	
     PlaySoundFrontend("SELECT", "RDRO_Character_Creator_Sounds", true, 0)
     local menu = MenuData.GetOpened(MenuType, data._namespace, data._name)
 
     if menu.cancel ~= nil then
         menu.cancel(data, menu)
     end
+	cb({})
 end)
-RegisterNUICallback('menu_change', function(data)
+RegisterNUICallback('menu_change', function(data,cb)
     local menu = MenuData.GetOpened(MenuType, data._namespace, data._name)
 
     for i=1, #data.elements, 1 do
@@ -194,6 +212,7 @@ RegisterNUICallback('menu_change', function(data)
     if menu.change ~= nil then
         menu.change(data, menu)
     end
+	cb({})
 end)
 --================================== CALLBACKS ==================================
 

@@ -1,13 +1,24 @@
 (function() {
 	let MenuTpl =
-		'<div id="menu_{{_namespace}}_{{_name}}" class="menu{{#align}} align-{{align}}{{/align}}">' +
+		'<div id="menu_{{_namespace}}_{{_name}}" style="height: 90%;width: 25%;" class="menu{{#align}} align-{{align}}{{/align}}">' +
 			'<div class="head"><span>{{{title}}}</span></div>' +					
 				'<div class="desciption">{{{subtext}}}</div>' +
-				'<div class="menu-items">' +
 				'<div class="topline"></div>' +
+				'<div class="menu-items" style="height: 60%;max-height: unset;">' +
+					
 					'{{#elements}}' +
-						'<div class="menu-item {{#selected}}selected{{/selected}} {{#isSlider}}slider{{/isSlider}}">' +
-							'<div id="item-label">{{{label}}}</div><div class="arrows">{{#isSlider}}<i class="fas fa-chevron-left"></i><div id="slider-label">{{{sliderLabel}}}</div><i class="fas fa-chevron-right"></i>{{/isSlider}}</div>' +
+						'<div class="menu-item {{#selected}}selected{{/selected}} {{#isSlider}}slider{{/isSlider}} {{#isText}}text{{/isText}}">' +
+						//"nui://redemrp_inventory/html/"..(l.meta.resim or v.image) ..".png"
+							'{{#image}}<img style="width: 50px;height: 50px;background-blend-mode: screen;background-repeat: round;align-content: center;padding: 10px;" src="{{{image}}}">{{/image}}'+
+							'{{^isText}}<div id="item-label">{{{label}}}</div>{{/isText}}'+
+							'{{#isText}}<div class="inputtext" style="width: 100%;height: 100%;">'+
+								'<input id="{{{list_id}}}" type="text" oninput="rendertext(this)"style="width: 100%;height: 100%;background: transparent;border: none;color: white;    font-family: \'crock\';font-size: 15px;" placeholder="{{{label}}}">'+
+							'</div>{{/isText}}'+
+							'{{#isSlider}}<div class="arrows">'+
+								'<i class="fas fa-chevron-left"></i>'+
+								'<div id="slider-label">{{{sliderLabel}}}</div>'+
+								'<i class="fas fa-chevron-right"></i>'+
+							'</div>{{/isSlider}}' +
 						'</div>' +
 										
 					'{{/elements}}' +
@@ -16,15 +27,25 @@
 				'{{#elements}}' +
 				'{{#selected}}' +
 				'<div class="options-amount">{{{list_id}}}/{{{list_max}}}</div>' +
-				'<br>'+
-				'<div class="desciption">{{{desc}}}</div>' +
+				//'<br>'+
+				'<div style="display: flex;align-items: center;justify-content: space-evenly;flex-direction: column;align-content: center;margin:10px">'+
+					'<div class="images" style="display: flex;flex-wrap: wrap;justify-content: center;flex-direction: row;width: 100%;">'+
+						'{{#descriptionimages}}' +
+						'<div style="display: flex;flex-wrap: wrap;flex-direction: column;align-items: flex-end;margin: 5px">'+
+							'<span style="position: absolute;">{{{count}}}</span>'+
+							'<img style="width: 60px;height: 60px;background-image: url(nui://redemrp_inventory/html/slot-bk.png);background-blend-mode: screen;background-repeat: round;align-content: center;padding: 10px;" src={{{src}}}>'+
+							'<span style="width: 100%;text-align: center;">{{{text}}}</span>'+
+						'</div>'+
+					'{{/descriptionimages}}' +
+					'</div>'+
+					'<div class="desciption">{{{desc}}}</div>' +
+				'</div>'+
 				'{{/selected}}' +
 				'{{/elements}}' +
 				'<br>'+
 			'</div>' +
 		'</div>'
 	;
-
     window.MenuData = {};
     MenuData.ResourceName = 'redemrp_menu_base';
     MenuData.opened = {};
@@ -97,15 +118,22 @@
         let focused = MenuData.getFocused();
         menuContainer.innerHTML = '';
         $(menuContainer).hide();
-
         for (let namespace in MenuData.opened) {
             for (let name in MenuData.opened[namespace]) {
                 let menuData = MenuData.opened[namespace][name];
                 let view = JSON.parse(JSON.stringify(menuData));
-
                 for (let i = 0; i < menuData.elements.length; i++) {
                     let element = view.elements[i];
+                    if(element.image){
+						if(element.image.includes("https://")){
 
+						}else if(element.image.includes(".png")){
+							element.image = "nui://redemrp_inventory/html/"+element.image;                    	
+						}
+						else{
+							element.image = "nui://redemrp_inventory/html/"+element.image+".png";
+						}
+                    }
                     switch (element.type) {
                         case 'default':
 							element.list_id = i + 1;
@@ -120,7 +148,13 @@
 
                             break;
                         }
-
+						case 'text':{
+							element.isText = true;
+							element.list_id = i + 1;
+							element.list_max = menuData.elements.length;
+                            element.textPlaceHolder = (typeof element.options == 'undefined') ? element.value : element.options[element.value];
+							break;
+						}
                         default:
 							element.list_id = i + 1;
 							element.list_max = menuData.elements.length;
@@ -147,7 +181,7 @@
     };
 
     MenuData.submit = function(namespace, name, data) {
-        $.post('http://' + MenuData.ResourceName + '/menu_submit', JSON.stringify({
+        $.post('https://' + MenuData.ResourceName + '/menu_submit', JSON.stringify({
             _namespace: namespace,
             _name: name,
             current: data,
@@ -156,14 +190,14 @@
     };
 
     MenuData.cancel = function(namespace, name) {
-        $.post('http://' + MenuData.ResourceName + '/menu_cancel', JSON.stringify({
+        $.post('https://' + MenuData.ResourceName + '/menu_cancel', JSON.stringify({
             _namespace: namespace,
             _name: name,
         }));
     };
 
     MenuData.change = function(namespace, name, data) {
-        $.post('http://' + MenuData.ResourceName + '/menu_change', JSON.stringify({
+        $.post('https://' + MenuData.ResourceName + '/menu_change', JSON.stringify({
             _namespace: namespace,
             _name: name,
             current: data,
@@ -218,69 +252,12 @@
                     }
 
                     case 'TOP': {
-                        let focused = MenuData.getFocused();
-
-                        if (typeof focused != 'undefined') {
-                            let menu = MenuData.opened[focused.namespace][focused.name];
-                            let pos = MenuData.pos[focused.namespace][focused.name];
-
-                            if (pos > 0) {
-                                MenuData.pos[focused.namespace][focused.name]--;
-                            } else {
-                                MenuData.pos[focused.namespace][focused.name] = menu.elements.length - 1;
-                            }
-
-                            let elem = menu.elements[MenuData.pos[focused.namespace][focused.name]];
-
-                            for (let i = 0; i < menu.elements.length; i++) {
-                                if (i == MenuData.pos[focused.namespace][focused.name]) {
-                                    menu.elements[i].selected = true;
-                                } else {
-                                    menu.elements[i].selected = false;
-                                }
-                            }
-
-                            MenuData.change(focused.namespace, focused.name, elem);
-                            MenuData.render();
-                            $.post('http://' + MenuData.ResourceName + '/playsound');
-
-                            $('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
-                        }
-
+						up();
                         break;
                     }
 
                     case 'DOWN': {
-                        let focused = MenuData.getFocused();
-
-                        if (typeof focused != 'undefined') {
-                            let menu = MenuData.opened[focused.namespace][focused.name];
-                            let pos = MenuData.pos[focused.namespace][focused.name];
-                            let length = menu.elements.length;
-
-                            if (pos < length - 1) {
-                                MenuData.pos[focused.namespace][focused.name]++;
-                            } else {
-                                MenuData.pos[focused.namespace][focused.name] = 0;
-                            }
-
-                            let elem = menu.elements[MenuData.pos[focused.namespace][focused.name]];
-
-                            for (let i = 0; i < menu.elements.length; i++) {
-                                if (i == MenuData.pos[focused.namespace][focused.name]) {
-                                    menu.elements[i].selected = true;
-                                } else {
-                                    menu.elements[i].selected = false;
-                                }
-                            }
-
-                            MenuData.change(focused.namespace, focused.name, elem);
-                            MenuData.render();
-                            $.post('http://' + MenuData.ResourceName + '/playsound');
-
-                            $('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
-                        }
-
+                        down();
                         break;
                     }
 
@@ -391,3 +368,104 @@
     };
 
 })();
+
+function rendertext(sthis){
+	let focused = MenuData.getFocused();
+	let menu = MenuData.opened[focused.namespace][focused.name];
+	let pos = MenuData.pos[focused.namespace][focused.name];
+	let elem = menu.elements[pos];
+	elem.value = sthis.value;
+	//MenuData.change(focused.namespace, focused.name, elem);
+	MenuData.render();
+};		
+
+function down(){
+	let focused = MenuData.getFocused();
+	if (typeof focused != 'undefined') {
+		let menu = MenuData.opened[focused.namespace][focused.name];
+		let pos = MenuData.pos[focused.namespace][focused.name];
+		let length = menu.elements.length;
+
+		if (pos < length - 1) {
+			MenuData.pos[focused.namespace][focused.name]++;
+		} else {
+			MenuData.pos[focused.namespace][focused.name] = 0;
+		}
+
+		let elem = menu.elements[MenuData.pos[focused.namespace][focused.name]];
+
+		for (let i = 0; i < menu.elements.length; i++) {
+			if (i == MenuData.pos[focused.namespace][focused.name]) {
+				menu.elements[i].selected = true;
+			} else {
+				menu.elements[i].selected = false;
+			}
+		}
+
+		MenuData.change(focused.namespace, focused.name, elem);
+		MenuData.render();
+		$.post('https://' + MenuData.ResourceName + '/playsound', JSON.stringify({
+			type: elem.type
+		}));
+
+		$('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
+	}
+}
+
+function up(){	
+	let focused = MenuData.getFocused();
+	if (typeof focused != 'undefined') {
+		let menu = MenuData.opened[focused.namespace][focused.name];
+		let pos = MenuData.pos[focused.namespace][focused.name];
+
+		if (pos > 0) {
+			MenuData.pos[focused.namespace][focused.name]--;
+		} else {
+			MenuData.pos[focused.namespace][focused.name] = menu.elements.length - 1;
+		}
+
+		let elem = menu.elements[MenuData.pos[focused.namespace][focused.name]];
+
+		for (let i = 0; i < menu.elements.length; i++) {
+			if (i == MenuData.pos[focused.namespace][focused.name]) {
+				menu.elements[i].selected = true;
+			} else {
+				menu.elements[i].selected = false;
+			}
+		}
+
+		MenuData.change(focused.namespace, focused.name, elem);
+		MenuData.render();
+		$.post('https://' + MenuData.ResourceName + '/playsound', JSON.stringify({
+			type: elem.type
+		}));
+		if (elem.type === "text"){
+			
+		}
+		$('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
+	}
+}
+$(document).keydown(function (e) {
+    if (e.keyCode == 38 ) { // if "up" is pressed 
+		up();
+	}else if(e.keyCode == 40 ){
+		down();
+	}else if(e.keyCode == 8 || e.keyCode == 27){
+		let focused = MenuData.getFocused();
+		if (typeof focused != 'undefined') {
+			MenuData.cancel(focused.namespace, focused.name);
+		}
+	}else if(e.keyCode == 13) {
+		let focused = MenuData.getFocused();
+		if (typeof focused != 'undefined') {
+			let menu = MenuData.opened[focused.namespace][focused.name];
+			let pos = MenuData.pos[focused.namespace][focused.name];
+			let elem = menu.elements[pos];
+
+			if (menu.elements.length > 0) {
+				MenuData.submit(focused.namespace, focused.name, elem);
+			}
+		}
+	}
+	
+});
