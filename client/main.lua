@@ -40,7 +40,6 @@ function MenuData.Open(type, namespace, name, data, submit, cancel, change, clos
     menu.cancel    = cancel
     menu.change    = change
     menu.setnui    = setnui or false
-	print(menu.setnui)
     menu.close = function()
         MenuData.RegisteredTypes[type].close(namespace, name,false)
 
