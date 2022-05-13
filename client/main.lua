@@ -188,13 +188,16 @@ function checkdata(_data, menu)
 	data._name = nil
 	data.type = nil
 	for k,l in pairs(menu)do
-		l.selected = nil
-		cbdata = dataChecker(data,l,true)
-		if cbdata then
-			return true
-		end
-	end
-	return false
+        l.selected = nil
+        l._name = nil
+        l._namespace = nil
+        l.type = nil
+        cbdata = dataChecker(data,l)
+        if cbdata then
+            return true
+        end
+    end
+    return false
 end
 
 RegisterNUICallback('menu_submit', function(data,cb)
