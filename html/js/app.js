@@ -9,10 +9,10 @@
         '{{#elements}}' +
         '<div class="menu-item {{#selected}}selected{{/selected}} {{#isSlider}}slider{{/isSlider}} {{#isText}}text{{/isText}}">' +
         //"nui://redemrp_inventory/html/"..(l.meta.resim or v.image) ..".png"
-        '{{#image}}<img style="width: 50px;height: 50px;background-blend-mode: screen;background-repeat: round;align-content: center;padding: 10px;" src="{{{image}}}">{{/image}}' +
+        '{{#image}}<img style="width:auto;height: 50px;background-blend-mode: screen;background-repeat: round;align-content: center;padding: 10px;" src="{{{image}}}">{{/image}}' +
         '{{^isText}}<div id="item-label">{{{label}}}</div>{{/isText}}' +
         '{{#isText}}<div class="inputtext" style="width: 100%;height: 100%;">' +
-        '<input id="{{{list_id}}}" type="text" oninput="rendertext(this)"style="width: 100%;height: 100%;background: transparent;border: none;color: white;    font-family: \'crock\';font-size: 15px;" placeholder="{{{label}}}">' +
+        '<input id="{{{list_id}}}" type="text" value="{{{value}}}" oninput="rendertext(this)" class="textinput" placeholder="{{{label}}}">' +
         '</div>{{/isText}}' +
         '{{#isSlider}}<div class="arrows">' +
         '<i class="fas fa-chevron-left"></i>' +
@@ -118,6 +118,7 @@
         let focused = MenuData.getFocused();
         menuContainer.innerHTML = '';
         $(menuContainer).hide();
+        let index = 0;
         for (let namespace in MenuData.opened) {
             for (let name in MenuData.opened[namespace]) {
                 let menuData = MenuData.opened[namespace][name];
@@ -127,7 +128,11 @@
                     if (element.image) {
                         if (element.image.includes("https://")) {
 
-                        } else if (element.image.includes(".png")) {
+                        }
+                        else if (element.image.includes("nui://")) {
+
+                        }
+                        else if (element.image.includes(".png")) {
                             element.image = "nui://redemrp_inventory/html/" + element.image;
                         }
                         else {
@@ -152,7 +157,6 @@
                             element.isText = true;
                             element.list_id = i + 1;
                             element.list_max = menuData.elements.length;
-                            element.textPlaceHolder = (typeof element.options == 'undefined') ? element.value : element.options[element.value];
                             break;
                         }
                         default:
@@ -163,6 +167,7 @@
 
                     if (i == MenuData.pos[namespace][name]) {
                         element.selected = true;
+                        index = i + 1;
                     }
                 }
 
@@ -177,6 +182,13 @@
         }
 
         $(menuContainer).show();
+
+
+        let imputs = document.getElementById(index);
+        if (imputs) {
+            imputs.scrollIntoView();
+            imputs.focus();
+        }
 
     };
 
@@ -263,93 +275,12 @@
                     }
 
                     case 'LEFT': {
-                        let focused = MenuData.getFocused();
-
-                        if (typeof focused != 'undefined') {
-                            let menu = MenuData.opened[focused.namespace][focused.name];
-                            let pos = MenuData.pos[focused.namespace][focused.name];
-                            let elem = menu.elements[pos];
-
-                            switch (elem.type) {
-                                case 'default':
-                                    break;
-
-                                case 'slider': {
-                                    let min = (typeof elem.min == 'undefined') ? 0 : elem.min;
-                                    if (elem.value > min) {
-                                        if (typeof elem.hop != 'undefined') {
-                                            elem.value = (elem.value - elem.hop);
-                                            if (elem.value < min) {
-                                                elem.value = min
-                                            }
-                                        }
-                                        else {
-                                            elem.value--;
-                                        }
-                                        MenuData.change(focused.namespace, focused.name, elem);
-                                    }
-
-                                    MenuData.render();
-                                    break;
-                                }
-
-                                default:
-                                    break;
-                            }
-
-                            $('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
-                        }
-
+                        left();
                         break;
                     }
 
                     case 'RIGHT': {
-                        let focused = MenuData.getFocused();
-
-                        if (typeof focused != 'undefined') {
-                            let menu = MenuData.opened[focused.namespace][focused.name];
-                            let pos = MenuData.pos[focused.namespace][focused.name];
-                            let elem = menu.elements[pos];
-
-                            switch (elem.type) {
-                                case 'default':
-                                    break;
-
-                                case 'slider': {
-                                    if (typeof elem.options != 'undefined' && elem.value < elem.options.length - 1) {
-                                        elem.value++;
-                                        MenuData.change(focused.namespace, focused.name, elem);
-                                    }
-
-                                    if (typeof elem.max != 'undefined' && elem.value < elem.max) {
-
-                                        if (typeof elem.hop != 'undefined') {
-                                            let min = (typeof elem.min == 'undefined') ? 0 : elem.min;
-                                            if (min > 0 && min == elem.value) {
-                                                elem.value = 0;
-                                            }
-                                            elem.value = (elem.value + elem.hop);
-                                            if (elem.value > elem.max) {
-                                                elem.value = elem.max
-                                            }
-                                        }
-                                        else {
-                                            elem.value++;
-                                        }
-                                        MenuData.change(focused.namespace, focused.name, elem);
-                                    }
-
-                                    MenuData.render();
-                                    break;
-                                }
-
-                                default:
-                                    break;
-                            }
-
-                            $('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
-                        }
-
+                        right();
                         break;
                     }
 
@@ -376,8 +307,8 @@ function rendertext(sthis) {
     let pos = MenuData.pos[focused.namespace][focused.name];
     let elem = menu.elements[pos];
     elem.value = sthis.value;
-    //MenuData.change(focused.namespace, focused.name, elem);
-    MenuData.render();
+    MenuData.change(focused.namespace, focused.name, elem);
+    //MenuData.render();
 };
 
 function down() {
@@ -440,20 +371,114 @@ function up() {
         $.post('https://' + MenuData.ResourceName + '/playsound', JSON.stringify({
             type: elem.type
         }));
-        if (elem.type === "text") {
-
-        }
         $('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
     }
 }
-$(document).keydown(function (e) {
-    if (e.keyCode == 38) { // if "up" is pressed 
+
+function left() {
+    let focused = MenuData.getFocused();
+    if (typeof focused != 'undefined') {
+        let menu = MenuData.opened[focused.namespace][focused.name];
+        let pos = MenuData.pos[focused.namespace][focused.name];
+        let elem = menu.elements[pos];
+
+        switch (elem.type) {
+            case 'default':
+                break;
+
+            case 'slider': {
+                let min = (typeof elem.min == 'undefined') ? 0 : elem.min;
+                if (elem.value > min) {
+                    if (typeof elem.hop != 'undefined') {
+                        elem.value = (elem.value - elem.hop);
+                        if (elem.value < min) {
+                            elem.value = min
+                        }
+                    }
+                    else {
+                        elem.value--;
+                    }
+                    MenuData.change(focused.namespace, focused.name, elem);
+                }
+
+                MenuData.render();
+                break;
+            }
+
+            default:
+                break;
+        }
+
+        $('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
+    }
+}
+
+function right() {
+    let focused = MenuData.getFocused();
+    if (typeof focused != 'undefined') {
+        let menu = MenuData.opened[focused.namespace][focused.name];
+        let pos = MenuData.pos[focused.namespace][focused.name];
+        let elem = menu.elements[pos];
+
+        switch (elem.type) {
+            case 'default':
+                break;
+
+            case 'slider': {
+                if (typeof elem.options != 'undefined' && elem.value < elem.options.length - 1) {
+                    elem.value++;
+                    MenuData.change(focused.namespace, focused.name, elem);
+                }
+
+                if (typeof elem.max != 'undefined' && elem.value < elem.max) {
+
+                    if (typeof elem.hop != 'undefined') {
+                        let min = (typeof elem.min == 'undefined') ? 0 : elem.min;
+                        if (min > 0 && min == elem.value) {
+                            elem.value = 0;
+                        }
+                        elem.value = (elem.value + elem.hop);
+                        if (elem.value > elem.max) {
+                            elem.value = elem.max
+                        }
+                    }
+                    else {
+                        elem.value++;
+                    }
+                    MenuData.change(focused.namespace, focused.name, elem);
+                }
+
+                MenuData.render();
+                break;
+            }
+
+            default:
+                break;
+        }
+
+        $('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
+    }
+}
+
+$(document).keyup(function (e) {
+    if (e.keyCode == 38 || (e.shiftKey && e.keyCode == 9)) { // if "up" is pressed 
+        e.preventDefault();
         up();
-    } else if (e.keyCode == 40) {
+    } else if (e.keyCode == 40 || e.keyCode == 9) {
+        e.preventDefault();
         down();
+    } else if (e.keyCode == 37) {
+        e.preventDefault();
+        left();
+    } else if (e.keyCode == 39) {
+        e.preventDefault();
+        right();
     } else if (e.keyCode == 8 || e.keyCode == 27) {
         let focused = MenuData.getFocused();
-        if (typeof focused != 'undefined') {
+        let menu = MenuData.opened[focused.namespace][focused.name];
+        let pos = MenuData.pos[focused.namespace][focused.name];
+        let elem = menu.elements[pos];
+        if (typeof focused != 'undefined' && elem.type != "text") {
             MenuData.cancel(focused.namespace, focused.name);
         }
     } else if (e.keyCode == 13) {

@@ -11,6 +11,17 @@
 	src: url(../fonts/HapnaSlabSerif-Medium.ttf) format('truetype')
 }
 
+.textinput{
+	width: 100%;
+	height: 100%;
+	background: transparent;
+	border: none;
+	color: white;
+	font-family: 'crock';
+	font-size: 15px;
+	outline: none;
+}
+
 .menu {
 	font-family: "crock", crock, serif;
 	min-width: 380px;

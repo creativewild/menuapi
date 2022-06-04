@@ -12,7 +12,7 @@ MenuData.RegisteredTypes['default'] = {
             ak_menubase_data = data
         }) 
 		if setnui then
-			SetNuiFocus(setnui,setnui)
+			SetNuiFocus(setnui,false)
 		end
 	end,
     close  = function(namespace, name,setnui)
@@ -186,18 +186,18 @@ function checkdata(_data, menu)
 	data.selected = nil
 	data._namespace = nil
 	data._name = nil
-	data.type = nil
+	if data.type then data.type = nil end
 	for k,l in pairs(menu)do
-        l.selected = nil
-        l._name = nil
-        l._namespace = nil
+		l.selected = nil
+		l._name = nil
+		l._namespace = nil
         l.type = nil
-        cbdata = dataChecker(data,l)
-        if cbdata then
-            return true
-        end
-    end
-    return false
+		cbdata = dataChecker(data,l)
+		if cbdata then
+			return true
+		end
+	end
+	return false
 end
 
 RegisterNUICallback('menu_submit', function(data,cb)
@@ -216,8 +216,9 @@ end)
 
 RegisterNUICallback('playsound', function(data,cb) 
 	if data.type == "text" then
-		--SetNuiFocus(1, 1)
-		--SetNuiFocusKeepInput(false)
+        Wait(500)
+		SetNuiFocus(1, 0)
+		--SetNuiFocusKeepInput(true)
 	else 
 		--SetNuiFocus(0, 0)
 		--SetNuiFocusKeepInput(true)	
@@ -239,6 +240,8 @@ RegisterNUICallback('menu_cancel', function(data,cb)
 end)
 RegisterNUICallback('menu_change', function(data,cb)
     local menu = MenuData.GetOpened(MenuType, data._namespace, data._name)
+	cb({})
+    if not menu then return end
     for i=1, #data.elements, 1 do
         menu.setElement(i, 'value', data.elements[i].value)
 
@@ -251,7 +254,6 @@ RegisterNUICallback('menu_change', function(data,cb)
     if menu.change ~= nil then
         menu.change(data, menu)
     end
-	cb({})
 end)
 --================================== CALLBACKS ==================================
 
@@ -263,29 +265,43 @@ Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
         if #MenuData.Opened > 0 then
-
-            if ( IsControlJustReleased(0, 0x43DBF61F)  or  IsDisabledControlJustReleased(0, 0x43DBF61F)) then
+            if (IsControlJustReleased(0, 0x43DBF61F)  or  IsDisabledControlJustReleased(0, 0x43DBF61F)) then
+                DisableControlAction(0, 0x43DBF61F,1)
                 SendNUIMessage({ak_menubase_action = 'controlPressed', ak_menubase_control = 'ENTER'})
+                EnableControlAction(0, 0x43DBF61F,1)
             end
 
             if (IsControlJustReleased(0, 0x308588E6)  or  IsDisabledControlJustReleased(0, 0x308588E6)) then
+                DisableControlAction(0, 0x308588E6,1)
                 SendNUIMessage({ak_menubase_action  = 'controlPressed', ak_menubase_control = 'BACKSPACE'})
+                EnableControlAction(0, 0x308588E6,1)
             end
 
             if (IsControlJustReleased(0, 0x911CB09E)  or  IsDisabledControlJustReleased(0, 0x911CB09E)) then
+                DisableControlAction(0, 0x911CB09E,1)
                 SendNUIMessage({ak_menubase_action  = 'controlPressed', ak_menubase_control = 'TOP'})
+                EnableControlAction(0, 0x911CB09E,1)
             end
 
-            if (IsControlJustReleased(0, 0x4403F97F)  or  IsDisabledControlJustReleased(0, 0x4403F97F)) then
+            if ((IsControlJustReleased(0, 0x4403F97F)  or  IsDisabledControlJustReleased(0, 0x4403F97F)) or 
+                (IsControlJustReleased(0, 0xB238FE0B)  or  IsDisabledControlJustReleased(0, 0xB238FE0B))) then                    
+                DisableControlAction(0, 0x4403F97F,1)
+                DisableControlAction(0, 0xB238FE0B,1)
                 SendNUIMessage({ak_menubase_action  = 'controlPressed', ak_menubase_control = 'DOWN'})
+                EnableControlAction(0, 0x4403F97F,1)
+                EnableControlAction(0, 0xB238FE0B,1)
             end
 
             if (IsControlJustReleased(0, 0xAD7FCC5B)  or  IsDisabledControlJustReleased(0, 0xAD7FCC5B)) then
+                DisableControlAction(0, 0xAD7FCC5B,1)
                 SendNUIMessage({ak_menubase_action  = 'controlPressed', ak_menubase_control = 'LEFT'})
+                EnableControlAction(0, 0xAD7FCC5B,1)
             end
 
             if (IsControlJustReleased(0, 0x65F9EC5B)  or  IsDisabledControlJustReleased(0, 0x65F9EC5B)) then
+                DisableControlAction(0, 0x65F9EC5B,1)
                 SendNUIMessage({ak_menubase_action  = 'controlPressed', ak_menubase_control = 'RIGHT'})
+                EnableControlAction(0, 0x65F9EC5B,1)
             end
 
             if IsPauseMenuActive() then
