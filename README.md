@@ -7,6 +7,7 @@ qadr version has changed CSS, image compatibility, and add nui focus control.
 - Be sure you have RedEM and RedEM:RP Installed
 if not -> [RedEM](https://github.com/kanersps/redem) --> [RedEM:RP](https://github.com/RedEM-RP/redem_roleplay)
 - Clone redemrp_menu_base into [redemrp] folder
+- folder name must be `redemrp_menu_base`
 - add ```ensure redemrp_menu_base``` after ```ensure redem_roleplay```
 
 image : 
