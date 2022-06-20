@@ -1,6 +1,6 @@
 (function () {
     let MenuTpl =
-        '<div id="menu_{{_namespace}}_{{_name}}" style="height: 90%;width: 25%;" class="menu{{#align}} align-{{align}}{{/align}}">' +
+        '<div id="menu_{{_namespace}}_{{_name}}" style="height: 45%;width: 15%;" class="menu{{#align}} align-{{align}}{{/align}}">' +
         '<div class="head"><span>{{{title}}}</span></div>' +
         '<div class="desciption">{{{subtext}}}</div>' +
         '<div class="topline"></div>' +
@@ -47,7 +47,7 @@
         '</div>'
         ;
     window.MenuData = {};
-    MenuData.ResourceName = 'redemrp_menu_base';
+    MenuData.ResourceName = 'urpMenu';
     MenuData.opened = {};
     MenuData.focus = [];
     MenuData.pos = {};

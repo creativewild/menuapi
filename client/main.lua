@@ -330,7 +330,7 @@ end)
 --==================================  CONTROL SECTION =========================================
 
 --==================================  SHARE FUNCTIONS =========================================
-AddEventHandler('redemrp_menu_base:getData', function(cb)
+AddEventHandler('urpMenu:getData', function(cb)
     cb(MenuData)
 end)
 --==================================  SHARE FUNCTIONS =========================================
