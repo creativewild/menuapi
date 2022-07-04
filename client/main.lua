@@ -333,4 +333,7 @@ end)
 AddEventHandler('urpMenu:getData', function(cb)
     cb(MenuData)
 end)
+AddEventHandler('menuapi:getData', function(cb)		-- Backwards Compatibility
+    cb(MenuData)
+end)
 --==================================  SHARE FUNCTIONS =========================================
