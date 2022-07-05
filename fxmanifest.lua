@@ -16,6 +16,7 @@ files {
 	'html/ui.html',
 	'html/css/app.css',
 	'html/css/*.png',
+	'html/items/*.png',
 	'html/js/mustache.min.js',
 	'html/js/app.js',
 	'html/js/wrapper.js',
