@@ -321,6 +321,8 @@ Citizen.CreateThread(function()
                     MenuData.ReOpen(v)
                 end
                 MenusToReOpen = { }
+			else
+				Citizen.Wait(500)
             end
         end
     end
