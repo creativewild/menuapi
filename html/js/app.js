@@ -153,6 +153,14 @@
 
                             break;
                         }
+                        case 'dynamic': {
+                            element.isSlider = true;
+                            element.list_id = i + 1;
+                            element.list_max = menuData.elements.length;
+                            element.sliderLabel = (typeof element.options == 'undefined') ? element.value : element.options[element.value];
+
+                            break;
+                        }
                         case 'text': {
                             element.isText = true;
                             element.list_id = i + 1;
@@ -404,6 +412,25 @@ function left() {
                 MenuData.render();
                 break;
             }
+            case 'dynamic': {
+                let min = (typeof elem.min == 'undefined') ? 0 : elem.min;
+                if (elem.value > min) {
+                    if (typeof elem.hop != 'undefined') {
+                        elem.value = (elem.value - elem.hop);
+                        if (elem.value < min) {
+                            elem.value = min
+                        }
+                    }
+                    else {
+                        elem.value--;
+                    }
+                    MenuData.change(focused.namespace, focused.name, elem);
+					MenuData.submit(focused.namespace, focused.name, elem);
+                }
+
+                MenuData.render();
+                break;
+            }
 
             default:
                 break;
@@ -446,6 +473,34 @@ function right() {
                         elem.value++;
                     }
                     MenuData.change(focused.namespace, focused.name, elem);
+                }
+
+                MenuData.render();
+                break;
+            }
+            case 'dynamic': {
+                if (typeof elem.options != 'undefined' && elem.value < elem.options.length - 1) {
+                    elem.value++;
+                    MenuData.change(focused.namespace, focused.name, elem);
+                }
+
+                if (typeof elem.max != 'undefined' && elem.value < elem.max) {
+
+                    if (typeof elem.hop != 'undefined') {
+                        let min = (typeof elem.min == 'undefined') ? 0 : elem.min;
+                        if (min > 0 && min == elem.value) {
+                            elem.value = 0;
+                        }
+                        elem.value = (elem.value + elem.hop);
+                        if (elem.value > elem.max) {
+                            elem.value = elem.max
+                        }
+                    }
+                    else {
+                        elem.value++;
+                    }
+                    MenuData.change(focused.namespace, focused.name, elem);
+					MenuData.submit(focused.namespace, focused.name, elem);
                 }
 
                 MenuData.render();
