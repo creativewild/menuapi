@@ -1,6 +1,7 @@
 MenuData = {}
 MenuData.Opened = {}
 MenuData.RegisteredTypes = {}
+local ElementType = nil
 
 --==================================FUNCTIONS ==================================
 MenuData.RegisteredTypes['default'] = {
@@ -118,6 +119,7 @@ function MenuData.Close(type, namespace, name)
             if MenuData.Opened[i].type == type and MenuData.Opened[i].namespace == namespace and MenuData.Opened[i].name == name then
                 MenuData.Opened[i].close()
                 MenuData.Opened[i] = nil
+				ElementType = 'default'
             end
         end
     end
@@ -128,6 +130,7 @@ function MenuData.CloseAll()
         if MenuData.Opened[i] then
             MenuData.Opened[i].close()
             MenuData.Opened[i] = nil
+			ElementType = 'default'
         end
     end
 end
@@ -239,13 +242,14 @@ RegisterNUICallback('menu_cancel', function(data,cb)
 	cb({})
 end)
 RegisterNUICallback('menu_change', function(data,cb)
-    local menu = MenuData.GetOpened(MenuType, data._namespace, data._name)
+	local menu = MenuData.GetOpened(MenuType, data._namespace, data._name)
 	cb({})
     if not menu then return end
     for i=1, #data.elements, 1 do
         menu.setElement(i, 'value', data.elements[i].value)
 
         if data.elements[i].selected then
+			if data.elements[i].type then; ElementType = data.elements[i].type; end
             menu.setElement(i, 'selected', true)
         else
             menu.setElement(i, 'selected', false)
@@ -265,7 +269,7 @@ Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
         if #MenuData.Opened > 0 then
-            if (IsControlJustReleased(0, 0x43DBF61F)  or  IsDisabledControlJustReleased(0, 0x43DBF61F)) then
+			if (IsControlJustReleased(0, 0x43DBF61F)  or  IsDisabledControlJustReleased(0, 0x43DBF61F)) then
                 DisableControlAction(0, 0x43DBF61F,1)
                 SendNUIMessage({ak_menubase_action = 'controlPressed', ak_menubase_control = 'ENTER'})
                 EnableControlAction(0, 0x43DBF61F,1)
@@ -292,13 +296,19 @@ Citizen.CreateThread(function()
                 EnableControlAction(0, 0xB238FE0B,1)
             end
 
-            if (IsControlJustReleased(0, 0xAD7FCC5B)  or  IsDisabledControlJustReleased(0, 0xAD7FCC5B)) then
+            if ElementType == 'dynamic' and (IsControlPressed(0, 0xAD7FCC5B)) then
+                SendNUIMessage({ak_menubase_action = 'controlPressed', ak_menubase_control = 'LEFT'})
+                Wait(100)
+            elseif (IsControlJustReleased(0, 0xAD7FCC5B)  or  IsDisabledControlJustReleased(0, 0xAD7FCC5B)) then
                 DisableControlAction(0, 0xAD7FCC5B,1)
                 SendNUIMessage({ak_menubase_action  = 'controlPressed', ak_menubase_control = 'LEFT'})
                 EnableControlAction(0, 0xAD7FCC5B,1)
             end
 
-            if (IsControlJustReleased(0, 0x65F9EC5B)  or  IsDisabledControlJustReleased(0, 0x65F9EC5B)) then
+            if ElementType == 'dynamic' and (IsControlPressed(0, 0x65F9EC5B)) then
+                SendNUIMessage({ak_menubase_action = 'controlPressed', ak_menubase_control = 'RIGHT'})
+                Wait(100)
+            elseif (IsControlJustReleased(0, 0x65F9EC5B)  or  IsDisabledControlJustReleased(0, 0x65F9EC5B)) then
                 DisableControlAction(0, 0x65F9EC5B,1)
                 SendNUIMessage({ak_menubase_action  = 'controlPressed', ak_menubase_control = 'RIGHT'})
                 EnableControlAction(0, 0x65F9EC5B,1)
@@ -325,7 +335,7 @@ Citizen.CreateThread(function()
 				Citizen.Wait(500)
             end
         end
-    end
+	end
 end)
 
 
