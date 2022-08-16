@@ -345,7 +345,12 @@ end)
 AddEventHandler('urpMenu:getData', function(cb)
     cb(MenuData)
 end)
-AddEventHandler('menuapi:getData', function(cb)		-- Backwards Compatibility
+
+-------------- Backwards Compatibility --------------
+AddEventHandler('menuapi:getData', function(cb)
+    cb(MenuData)
+end)
+AddEventHandler('redemrp_menu_base:getData', function(cb)
     cb(MenuData)
 end)
 --==================================  SHARE FUNCTIONS =========================================
