@@ -21,8 +21,7 @@ MenuData.RegisteredTypes['default'] = {
             ak_menubase_namespace = namespace,
             ak_menubase_name = name,
             ak_menubase_data = data
-        }) 
-		SetNuiFocus(false,false)
+        })   
     end
 }
 
@@ -42,7 +41,6 @@ function MenuData.Open(type, namespace, name, data, submit, cancel, change, clos
     menu.setnui    = setnui or false
     menu.close = function()
         MenuData.RegisteredTypes[type].close(namespace, name,false)
-
         for i=1, #MenuData.Opened, 1 do
             if MenuData.Opened[i] then
                 if MenuData.Opened[i].type == type and MenuData.Opened[i].namespace == namespace and MenuData.Opened[i].name == name then
@@ -50,7 +48,9 @@ function MenuData.Open(type, namespace, name, data, submit, cancel, change, clos
                 end
             end
         end
-
+        if #MenuData.Opened == 0 then
+            SetNuiFocus(false,false)
+        end
         if close then
             close(name)
         end
@@ -121,6 +121,9 @@ function MenuData.Close(type, namespace, name)
             end
         end
     end
+    if #MenuData.Opened == 0 then
+        SetNuiFocus(false,false)
+    end
 end
 
 function MenuData.CloseAll()
@@ -130,6 +133,7 @@ function MenuData.CloseAll()
             MenuData.Opened[i] = nil
         end
     end
+    SetNuiFocus(false,false)
 end
 
 function MenuData.GetOpened (type, namespace, name)
@@ -228,7 +232,7 @@ RegisterNUICallback('playsound', function(data,cb)
 end)
 
 RegisterNUICallback('menu_cancel', function(data,cb)	
-	--SetNuiFocus(0, 0)
+	SetNuiFocus(1, 0)
 	--SetNuiFocusKeepInput(true)	
     PlaySoundFrontend("SELECT", "RDRO_Character_Creator_Sounds", true, 0)
     local menu = MenuData.GetOpened(MenuType, data._namespace, data._name)
@@ -334,3 +338,9 @@ AddEventHandler('redemrp_menu_base:getData', function(cb)
     cb(MenuData)
 end)
 --==================================  SHARE FUNCTIONS =========================================
+
+AddEventHandler("onResourceStop", function(resource)
+    if resource == GetCurrentResourceName() then
+        MenuData.CloseAll()
+    end
+end)

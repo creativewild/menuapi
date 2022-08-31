@@ -1,51 +1,59 @@
 (function () {
-    let MenuTpl =
-        '<div id="menu_{{_namespace}}_{{_name}}" style="height: 90%;width: 25%;" class="menu{{#align}} align-{{align}}{{/align}}">' +
-        '<div class="head"><span>{{{title}}}</span></div>' +
-        '<div class="desciption">{{{subtext}}}</div>' +
-        '<div class="topline"></div>' +
-        '<div class="menu-items" style="height: 60%;max-height: unset;">' +
-
-        '{{#elements}}' +
-        '<div class="menu-item {{#selected}}selected{{/selected}} {{#isSlider}}slider{{/isSlider}} {{#isText}}text{{/isText}}">' +
-        //"nui://redemrp_inventory/html/"..(l.meta.resim or v.image) ..".png"
-        '{{#image}}<img style="width:auto;height: 50px;background-blend-mode: screen;background-repeat: round;align-content: center;padding: 10px;" src="{{{image}}}">{{/image}}' +
-        '{{^isText}}<div id="item-label">{{{label}}}</div>{{/isText}}' +
-        '{{#isText}}<div class="inputtext" style="width: 100%;height: 100%;">' +
-        '<input id="{{{list_id}}}" type="text" value="{{{value}}}" oninput="rendertext(this)" class="textinput" placeholder="{{{label}}}">' +
-        '</div>{{/isText}}' +
-        '{{#isSlider}}<div class="arrows">' +
-        '<i class="fas fa-chevron-left"></i>' +
-        '<div id="slider-label">{{{sliderLabel}}}</div>' +
-        '<i class="fas fa-chevron-right"></i>' +
-        '</div>{{/isSlider}}' +
-        '</div>' +
-
-        '{{/elements}}' +
-        '</div>' +
-        '<div class="scrollbottom"></div>' +
-        '{{#elements}}' +
-        '{{#selected}}' +
-        '<div class="options-amount">{{{list_id}}}/{{{list_max}}}</div>' +
-        //'<br>'+
-        '<div style="display: flex;align-items: center;justify-content: space-evenly;flex-direction: column;align-content: center;margin:10px">' +
-        '<div class="images" style="display: flex;flex-wrap: wrap;justify-content: center;flex-direction: row;width: 100%;">' +
-        '{{#descriptionimages}}' +
-        '<div style="display: flex;flex-wrap: wrap;flex-direction: column;align-items: flex-end;margin: 5px">' +
-        '<span style="position: absolute;">{{{count}}}</span>' +
-        '<img style="width: 60px;height: 60px;background-image: url(nui://redemrp_inventory/html/slot-bk.png);background-blend-mode: screen;background-repeat: round;align-content: center;padding: 10px;" src={{{src}}}>' +
-        '<span style="width: 100%;text-align: center;">{{{text}}}</span>' +
-        '</div>' +
-        '{{/descriptionimages}}' +
-        '</div>' +
-        '<div class="desciption">{{{desc}}}</div>' +
-        '</div>' +
-        '{{/selected}}' +
-        '{{/elements}}' +
-        '<br>' +
-        '</div>' +
-        '</div>'
-        ;
+    let MenuTpl = `
+    <div id="menu_{{_namespace}}_{{_name}}" style="height: 90%;width: 25%;" class="menu{{#align}} align-{{align}}{{/align}}">
+        <div class="head">
+            <span>{{{title}}}</span>
+        </div>
+        <div class="desciption">{{{subtext}}}</div>
+        <div class="topline"></div>
+        <div class="menu-items" style="height: 60%;max-height: unset;">
+            {{#elements}}
+                {{#isText}}
+                    <label style="display: flex;width: 87%;text-indent: 5px;margin-top: 6px;margin-left: auto;margin-right: auto;">{{{label}}}</label>
+                {{/isText}}
+                <div class="menu-item {{#selected}}selected{{/selected}} {{#isSlider}}slider{{/isSlider}} {{#isText}}text{{/isText}}">
+                    {{#image}}
+                        <img style="width:auto;height: 50px;background-blend-mode: screen;background-repeat: round;align-content: center;padding: 10px;" src="{{{image}}}">
+                    {{/image}}
+                    {{^isText}}
+                        <div id="item-label">{{{label}}}</div>
+                    {{/isText}}
+                    {{#isText}}
+                        <div class="inputtext" style="width: 100%;height: 100%;">
+                            <input id="{{{list_id}}}" type="{{{InputType}}}" value="{{{value}}}" oninput="rendertext(this)" class="textinput" placeholder="{{{label}}}">
+                        </div>
+                    {{/isText}}
+                    {{#isSlider}}
+                        <div class="arrows">
+                            <i class="fas fa-chevron-left"></i>
+                            <div id="slider-label">{{{sliderLabel}}}</div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    {{/isSlider}}
+                </div>
+            {{/elements}}
+        </div>
+        <div class="scrollbottom"></div>
+            {{#elements}}
+                {{#selected}}
+                    <div class="options-amount">{{{list_id}}}/{{{list_max}}}</div><br>
+                    <div style="display: flex;align-items: center;justify-content: space-evenly;flex-direction: column;align-content: center;margin:10px">
+                        <div class="images" style="display: flex;flex-wrap: wrap;justify-content: center;flex-direction: row;width: 100%;">
+                            {{#descriptionimages}}
+                                <div style="display: flex;flex-wrap: wrap;flex-direction: column;align-items: flex-end;margin: 5px">
+                                <span style="position: absolute;">{{{count}}}</span>
+                                <img style="width: 60px;height: 60px;background-image: url(nui://redemrp_inventory/html/slot-bk.png);background-blend-mode: screen;background-repeat: round;align-content: center;padding: 10px;" src={{{src}}}>
+                                <span style="width: 100%;text-align: center;">{{{text}}}</span>
+                                </div>
+                            {{/descriptionimages}}
+                        </div>
+                        <div class="desciption">{{{desc}}}</div>
+                    </div>
+                {{/selected}}
+            {{/elements}}
+            <br>
+        </div>
+    </div>`;
     window.MenuData = {};
     MenuData.ResourceName = 'redemrp_menu_base';
     MenuData.opened = {};
@@ -139,6 +147,9 @@
                             element.image = "nui://redemrp_inventory/html/" + element.image + ".png";
                         }
                     }
+                    if (!element.InputType) {
+                        element.InputType = 'text';
+                    }
                     switch (element.type) {
                         case 'default':
                             element.list_id = i + 1;
@@ -189,7 +200,7 @@
             imputs.scrollIntoView();
             imputs.focus();
         }
-
+        scroll(focused);
     };
 
     MenuData.submit = function (namespace, name, data) {
@@ -311,6 +322,14 @@ function rendertext(sthis) {
     //MenuData.render();
 };
 
+function scroll(focused) {
+    var label = $('#menu_' + focused?.namespace + '_' + focused?.name)?.find('.menu-item.selected')[0];
+    label?.scrollIntoView();
+    if (label?.previousElementSibling?.tagName == "LABEL") {
+        label.previousElementSibling.scrollIntoView();
+    }
+}
+
 function down() {
     let focused = MenuData.getFocused();
     if (typeof focused != 'undefined') {
@@ -340,7 +359,8 @@ function down() {
             type: elem.type
         }));
 
-        $('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
+        //$('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
+        scroll(focused);
     }
 }
 
@@ -371,7 +391,8 @@ function up() {
         $.post('https://' + MenuData.ResourceName + '/playsound', JSON.stringify({
             type: elem.type
         }));
-        $('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
+        //$('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
+        scroll(focused);
     }
 }
 
@@ -409,7 +430,8 @@ function left() {
                 break;
         }
 
-        $('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
+        //$('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
+        scroll(focused);
     }
 }
 
@@ -456,11 +478,12 @@ function right() {
                 break;
         }
 
-        $('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
+        //$('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
+        scroll(focused);
     }
 }
 
-$(document).keyup(function (e) {
+$(document).keydown(function (e) {
     if (e.keyCode == 38 || (e.shiftKey && e.keyCode == 9)) { // if "up" is pressed 
         e.preventDefault();
         up();
