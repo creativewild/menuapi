@@ -117,7 +117,6 @@
                 break;
             }
         }
-
         MenuData.render();
     };
 
@@ -170,6 +169,13 @@
                             element.list_max = menuData.elements.length;
                             break;
                         }
+                        case 'number': {
+                            element.InputType = 'number';
+                            element.isText = true;
+                            element.list_id = i + 1;
+                            element.list_max = menuData.elements.length;
+                            break;
+                        }
                         default:
                             element.list_id = i + 1;
                             element.list_max = menuData.elements.length;
@@ -216,7 +222,7 @@
     MenuData.cancel = function (namespace, name) {
         $.post('https://' + MenuData.ResourceName + '/menu_cancel', JSON.stringify({
             _namespace: namespace,
-            _name: name,
+            _name: name
         }));
     };
 
@@ -355,8 +361,10 @@ function down() {
 
         MenuData.change(focused.namespace, focused.name, elem);
         MenuData.render();
+
         $.post('https://' + MenuData.ResourceName + '/playsound', JSON.stringify({
-            type: elem.type
+            type: elem.type,
+            setNui: MenuData.opened[focused.namespace][focused.name].setNui
         }));
 
         //$('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
@@ -389,7 +397,8 @@ function up() {
         MenuData.change(focused.namespace, focused.name, elem);
         MenuData.render();
         $.post('https://' + MenuData.ResourceName + '/playsound', JSON.stringify({
-            type: elem.type
+            type: elem.type,
+            setNui: MenuData.opened[focused.namespace][focused.name].setNui
         }));
         //$('#menu_' + focused.namespace + '_' + focused.name).find('.menu-item.selected')[0].scrollIntoView();
         scroll(focused);
@@ -491,17 +500,15 @@ $(document).keydown(function (e) {
         e.preventDefault();
         down();
     } else if (e.keyCode == 37) {
-        e.preventDefault();
         left();
     } else if (e.keyCode == 39) {
-        e.preventDefault();
         right();
     } else if (e.keyCode == 8 || e.keyCode == 27) {
         let focused = MenuData.getFocused();
         let menu = MenuData.opened[focused.namespace][focused.name];
         let pos = MenuData.pos[focused.namespace][focused.name];
         let elem = menu.elements[pos];
-        if (typeof focused != 'undefined' && elem.type != "text") {
+        if (typeof focused != 'undefined' && elem.type != "text" && elem.type != "number") {
             MenuData.cancel(focused.namespace, focused.name);
         }
     } else if (e.keyCode == 13) {
