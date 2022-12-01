@@ -186,7 +186,7 @@ end
 
 function checkdata(data, menu)
     for k,l in pairs(menu)do
-        if l.label == data.label then
+        if (l.value and l.value == data.value) and (l.label and l.label == data.label) then
             for m,n in pairs(data)do
                 if l[m] and l[m] ~= n then
                     return false
