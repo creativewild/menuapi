@@ -6,23 +6,22 @@ local ElementType = nil
 --==================================FUNCTIONS ==================================
 MenuData.RegisteredTypes['default'] = {
     open  = function(namespace, name, data,setnui)
+        data.setNui = setnui
         SendNUIMessage({
             ak_menubase_action = 'openMenu',
             ak_menubase_namespace = namespace,
             ak_menubase_name = name,
             ak_menubase_data = data
-        }) 
-		if setnui then
-			SetNuiFocus(setnui,false)
-		end
+        })
+		SetNuiFocus(setnui,false)
 	end,
-    close  = function(namespace, name,setnui)
+    close  = function(namespace, name)
         SendNUIMessage({
             ak_menubase_action = 'closeMenu',
             ak_menubase_namespace = namespace,
             ak_menubase_name = name,
             ak_menubase_data = data
-        })   
+        })
     end
 }
 
@@ -78,7 +77,7 @@ function MenuData.Open(type, namespace, name, data, submit, cancel, change, clos
 
     end
 
-    menu.refresh = function() 
+    menu.refresh = function()
         MenuData.RegisteredTypes[type].open(namespace, name, menu.data,menu.setnui)
     end
 
@@ -188,58 +187,48 @@ function dataChecker(t1,t2,ignore_mt)
 	return true
 end
 
-function checkdata(_data, menu)
-	local data = _data
-	data.selected = nil
-	data._namespace = nil
-	data._name = nil
-	if data.type then data.type = nil end
-	for k,l in pairs(menu)do
-		l.selected = nil
-		l._name = nil
-		l._namespace = nil
-        l.type = nil
-		cbdata = dataChecker(data,l)
-		if cbdata then
-			return true
-		end
-	end
-	return false
+function checkdata(data, menu)
+    for k,l in pairs(menu)do
+        if (l.value and l.value == data.value) and (l.label and l.label == data.label) then
+            for m,n in pairs(data)do
+                if l[m] and l[m] ~= n then
+                    return false
+                end
+            end
+        end
+    end
+    return true
 end
-
 RegisterNUICallback('menu_submit', function(data,cb)
+	cb({})
     PlaySoundFrontend("SELECT", "RDRO_Character_Creator_Sounds", true, 0)
     local menu = MenuData.GetOpened(MenuType, data._namespace, data._name)
     if menu and menu.submit ~= nil then
-		local issue = checkdata(data.current, menu.data.elements)
+		local issue = checkdata(data.current,menu.data.elements)
 		if issue then
 			menu.submit(data, menu)
 		else
 			print("invalid request")
 		end
     end
-	cb({})
 end)
 
-RegisterNUICallback('playsound', function(data,cb) 
-	if data.type == "text" then
-        Wait(500)
+RegisterNUICallback('playsound', function(data,cb)
+	if data.type == "text" or data.type == "number" then
 		SetNuiFocus(1, 0)
 		--SetNuiFocusKeepInput(true)
-	else 
-		--SetNuiFocus(0, 0)
-		--SetNuiFocusKeepInput(true)	
+	else
+		SetNuiFocus(data.setNui or 0, 0)
+		--SetNuiFocusKeepInput(true)
 	end
     PlaySoundFrontend("NAV_LEFT", "PAUSE_MENU_SOUNDSET", true, 0)
 	cb({})
+    --Wait(100)
 end)
-
-RegisterNUICallback('menu_cancel', function(data,cb)	
+RegisterNUICallback('menu_cancel', function(data,cb)
 	SetNuiFocus(1, 0)
-	--SetNuiFocusKeepInput(true)	
     PlaySoundFrontend("SELECT", "RDRO_Character_Creator_Sounds", true, 0)
     local menu = MenuData.GetOpened(MenuType, data._namespace, data._name)
-
     if menu.cancel ~= nil then
         menu.cancel(data, menu)
     end
@@ -291,8 +280,8 @@ Citizen.CreateThread(function()
                 EnableControlAction(0, 0x911CB09E,1)
             end
 
-            if ((IsControlJustReleased(0, 0x4403F97F)  or  IsDisabledControlJustReleased(0, 0x4403F97F)) or 
-                (IsControlJustReleased(0, 0xB238FE0B)  or  IsDisabledControlJustReleased(0, 0xB238FE0B))) then                    
+            if ((IsControlJustReleased(0, 0x4403F97F)  or  IsDisabledControlJustReleased(0, 0x4403F97F)) or
+                (IsControlJustReleased(0, 0xB238FE0B)  or  IsDisabledControlJustReleased(0, 0xB238FE0B))) then
                 DisableControlAction(0, 0x4403F97F,1)
                 DisableControlAction(0, 0xB238FE0B,1)
                 SendNUIMessage({ak_menubase_action  = 'controlPressed', ak_menubase_control = 'DOWN'})
@@ -325,7 +314,7 @@ Citizen.CreateThread(function()
                         table.insert(MenusToReOpen, v)
                     end
                     MenuData.CloseAll()
-                end               
+                end
             end
         else
             if PauseMenuState and not IsPauseMenuActive() then
